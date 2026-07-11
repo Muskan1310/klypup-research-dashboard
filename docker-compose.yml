@@ -1,0 +1,28 @@
+# Milestone 0: Postgres only. We deliberately do NOT containerize the
+# backend/frontend yet — during active development, running them directly
+# gives faster hot-reload and easier debugging than rebuilding containers
+# on every change. Full docker-compose (backend + frontend + db) is a
+# Milestone 10 task, once the app is stable and we want a one-command
+# "clone and run" experience for the evaluator.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: klypup-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: klypup
+      POSTGRES_PASSWORD: klypup
+      POSTGRES_DB: klypup
+    ports:
+      - "5432:5432"
+    volumes:
+      - klypup_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U klypup"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  klypup_pg_data:

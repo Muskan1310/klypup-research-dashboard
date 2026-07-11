@@ -1,0 +1,28 @@
+# --- Secrets ---
+.env
+.env.local
+.env.*.local
+
+# --- Python / backend ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+chroma_data/
+
+# --- Node / frontend ---
+node_modules/
+.next/
+out/
+.pnpm-store/
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+.DS_Store
+
+# --- Misc ---
+*.log
