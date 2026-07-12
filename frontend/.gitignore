@@ -30,8 +30,12 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files — deliberately NOT a blanket `.env*` (create-next-app's
+# default): that pattern also matches .env.example, which is supposed to
+# be committed as the template. Real secrets only.
+.env
+.env.local
+.env.*.local
 
 # vercel
 .vercel
