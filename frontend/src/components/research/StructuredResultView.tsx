@@ -1,6 +1,7 @@
 import { CompanyCards } from "@/components/research/CompanyCards";
 import { ComparisonTable } from "@/components/research/ComparisonTable";
 import { NewsList } from "@/components/research/NewsList";
+import { PerformanceChart } from "@/components/research/PerformanceChart";
 import { RiskSummary } from "@/components/research/RiskSummary";
 import type { StructuredResult } from "@/lib/types";
 
@@ -27,6 +28,7 @@ export function StructuredResultView({ result }: { result: StructuredResult }) {
   return (
     <>
       <CompanyCards cards={result.company_cards} />
+      <PerformanceChart cards={result.company_cards} />
       {result.comparison_table && <ComparisonTable rows={result.comparison_table} />}
       <NewsList items={result.news_items} />
       <RiskSummary summary={result.risk_summary} sources={result.sources} />
