@@ -1,12 +1,11 @@
 """Market data tool (TDD Section 6, Section 7): wraps the Alpha Vantage API.
 
-This is a plain, synchronous, self-contained function with zero Claude SDK
-dependency. TDD Section 7's core point about tool-calling is that *our*
-code executes the tool, not the model — this module is exactly that "our
-code," and per TDD Section 6 step 3 it'll eventually run inside
-`asyncio.gather` alongside the other tools once the orchestrator exists.
-That's deliberately not built here: this milestone is building and
-verifying the tool in isolation, before anything wires it into a loop.
+Async since adding a second tool (news_search.py) makes real parallel
+execution meaningful: TDD Section 6 step 3 calls for asyncio.gather across
+independent I/O-bound tool calls, which only pays off once there's more
+than one tool for the orchestrator to run concurrently. This module still
+has zero LLM SDK dependency — TDD Section 7's core point about tool-calling
+is that *our* code executes the tool, not the model.
 
 Alpha Vantage's free tier has an easy-to-miss failure mode: a rate-limited
 or malformed request still comes back as HTTP 200, with the actual error
@@ -18,12 +17,21 @@ like a network timeout or non-200 response: a structured
 `{"status": "failed", "reason": ...}`, never a raised exception.
 """
 
+import asyncio
+
 import httpx
 
 from app.core.config import settings
 
 ALPHA_VANTAGE_BASE_URL = "https://www.alphavantage.co/query"
 REQUEST_TIMEOUT_SECONDS = 10.0
+# Alpha Vantage's free tier enforces a hard 1-request/second burst limit —
+# empirically confirmed, not just documented: back-to-back GLOBAL_QUOTE +
+# OVERVIEW calls with no spacing reliably tripped it. Sleeping briefly
+# between the two calls this function always makes is cheaper than losing
+# an entire get_stock_data() call (and burning 2 of the 25/day free-tier
+# requests) to a rate-limit response.
+BURST_LIMIT_COOLDOWN_SECONDS = 1.1
 
 
 class _AlphaVantageError(Exception):
@@ -33,7 +41,7 @@ class _AlphaVantageError(Exception):
     """
 
 
-def get_stock_data(ticker: str) -> dict:
+async def get_stock_data(ticker: str) -> dict:
     """Fetch current price/volume/change (GLOBAL_QUOTE) and fundamentals
     (OVERVIEW) for `ticker` from Alpha Vantage.
 
@@ -57,8 +65,10 @@ def get_stock_data(ticker: str) -> dict:
         return {"status": "failed", "reason": "ticker must not be empty"}
 
     try:
-        quote_data = _fetch_alpha_vantage(function="GLOBAL_QUOTE", symbol=symbol)
-        overview_data = _fetch_alpha_vantage(function="OVERVIEW", symbol=symbol)
+        async with httpx.AsyncClient() as client:
+            quote_data = await _fetch_alpha_vantage(client, function="GLOBAL_QUOTE", symbol=symbol)
+            await asyncio.sleep(BURST_LIMIT_COOLDOWN_SECONDS)
+            overview_data = await _fetch_alpha_vantage(client, function="OVERVIEW", symbol=symbol)
     except _AlphaVantageError as exc:
         return {"status": "failed", "reason": str(exc)}
 
@@ -87,11 +97,11 @@ def get_stock_data(ticker: str) -> dict:
         }
 
 
-def _fetch_alpha_vantage(*, function: str, symbol: str) -> dict:
+async def _fetch_alpha_vantage(client: httpx.AsyncClient, *, function: str, symbol: str) -> dict:
     params = {"function": function, "symbol": symbol, "apikey": settings.alpha_vantage_api_key}
 
     try:
-        response = httpx.get(ALPHA_VANTAGE_BASE_URL, params=params, timeout=REQUEST_TIMEOUT_SECONDS)
+        response = await client.get(ALPHA_VANTAGE_BASE_URL, params=params, timeout=REQUEST_TIMEOUT_SECONDS)
     except httpx.TimeoutException as exc:
         raise _AlphaVantageError(f"Alpha Vantage request timed out ({function} {symbol})") from exc
     except httpx.HTTPError as exc:

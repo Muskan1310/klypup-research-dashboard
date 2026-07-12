@@ -14,6 +14,7 @@ still a real HTTP call against the real API — just restricted to IBM.
 Set a real key (see .env.example) to check a different ticker.
 """
 
+import asyncio
 import json
 import os
 import sys
@@ -39,5 +40,5 @@ if __name__ == "__main__":
         ticker = "IBM"
 
     print(f"Fetching real market data for {ticker!r} from Alpha Vantage...\n")
-    result = get_stock_data(ticker)
+    result = asyncio.run(get_stock_data(ticker))
     print(json.dumps(result, indent=2))

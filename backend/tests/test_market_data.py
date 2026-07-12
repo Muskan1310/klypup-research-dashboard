@@ -1,14 +1,30 @@
 """Unit tests for app/agents/tools/market_data.py.
 
-Alpha Vantage's HTTP calls are mocked (monkeypatched) — never real — so
-these run offline and don't burn the free tier's 25-requests/day quota.
-To see the tool hit the REAL API with real data, run
+Alpha Vantage's HTTP calls are mocked (monkeypatched on httpx.AsyncClient.get)
+— never real — so these run offline and don't burn the free tier's
+25-requests/day quota. To see the tool hit the REAL API with real data, run
 scripts/manual_check_market_data.py (not a pytest test, not collected here).
 """
 
+import asyncio
+
 import httpx
+import pytest
 
 from app.agents.tools.market_data import get_stock_data
+
+
+@pytest.fixture(autouse=True)
+def _no_real_sleep(monkeypatch):
+    # get_stock_data() sleeps between its two real Alpha Vantage calls to
+    # respect the free tier's burst limit — irrelevant with a mocked
+    # httpx.AsyncClient.get, and would otherwise add ~1.1s to every test
+    # that exercises both calls.
+    async def fake_sleep(_seconds):
+        return None
+
+    monkeypatch.setattr("app.agents.tools.market_data.asyncio.sleep", fake_sleep)
+
 
 GLOBAL_QUOTE_RESPONSE = {
     "Global Quote": {
@@ -28,7 +44,7 @@ OVERVIEW_RESPONSE = {
 
 
 def _fake_get_for(quote_body: dict, overview_body: dict):
-    def fake_get(url, params, timeout):
+    async def fake_get(self, url, params=None, timeout=None):
         body = quote_body if params["function"] == "GLOBAL_QUOTE" else overview_body
         return httpx.Response(200, json=body, request=httpx.Request("GET", url))
 
@@ -36,12 +52,9 @@ def _fake_get_for(quote_body: dict, overview_body: dict):
 
 
 def test_get_stock_data_success(monkeypatch):
-    monkeypatch.setattr(
-        "app.agents.tools.market_data.httpx.get",
-        _fake_get_for(GLOBAL_QUOTE_RESPONSE, OVERVIEW_RESPONSE),
-    )
+    monkeypatch.setattr(httpx.AsyncClient, "get", _fake_get_for(GLOBAL_QUOTE_RESPONSE, OVERVIEW_RESPONSE))
 
-    result = get_stock_data("ibm")  # lowercase in, uppercase out
+    result = asyncio.run(get_stock_data("ibm"))  # lowercase in, uppercase out
 
     assert result == {
         "status": "ok",
@@ -60,12 +73,9 @@ def test_get_stock_data_handles_missing_fundamentals_without_failing(monkeypatch
     # doesn't have — this must not fail the whole call, since price/volume
     # data from GLOBAL_QUOTE is still valid and useful on its own.
     sparse_overview = {"Symbol": "IBM", "PERatio": "None", "MarketCapitalization": "None", "EPS": "None"}
-    monkeypatch.setattr(
-        "app.agents.tools.market_data.httpx.get",
-        _fake_get_for(GLOBAL_QUOTE_RESPONSE, sparse_overview),
-    )
+    monkeypatch.setattr(httpx.AsyncClient, "get", _fake_get_for(GLOBAL_QUOTE_RESPONSE, sparse_overview))
 
-    result = get_stock_data("IBM")
+    result = asyncio.run(get_stock_data("IBM"))
 
     assert result["status"] == "ok"
     assert result["pe_ratio"] is None
@@ -85,12 +95,9 @@ def test_get_stock_data_rate_limit_disguised_as_http_200(monkeypatch):
             "to instantly remove all daily rate limits."
         )
     }
-    monkeypatch.setattr(
-        "app.agents.tools.market_data.httpx.get",
-        _fake_get_for(rate_limit_body, rate_limit_body),
-    )
+    monkeypatch.setattr(httpx.AsyncClient, "get", _fake_get_for(rate_limit_body, rate_limit_body))
 
-    result = get_stock_data("IBM")
+    result = asyncio.run(get_stock_data("IBM"))
 
     assert result["status"] == "failed"
     assert "rate limit" in result["reason"].lower()
@@ -98,12 +105,9 @@ def test_get_stock_data_rate_limit_disguised_as_http_200(monkeypatch):
 
 def test_get_stock_data_invalid_ticker_error_message(monkeypatch):
     error_body = {"Error Message": "Invalid API call. Please retry or visit the documentation."}
-    monkeypatch.setattr(
-        "app.agents.tools.market_data.httpx.get",
-        _fake_get_for(error_body, error_body),
-    )
+    monkeypatch.setattr(httpx.AsyncClient, "get", _fake_get_for(error_body, error_body))
 
-    result = get_stock_data("NOTAREALTICKER")
+    result = asyncio.run(get_stock_data("NOTAREALTICKER"))
 
     assert result == {
         "status": "failed",
@@ -112,23 +116,23 @@ def test_get_stock_data_invalid_ticker_error_message(monkeypatch):
 
 
 def test_get_stock_data_network_error_does_not_raise(monkeypatch):
-    def fake_get(url, params, timeout):
+    async def fake_get(self, url, params=None, timeout=None):
         raise httpx.ConnectError("connection refused")
 
-    monkeypatch.setattr("app.agents.tools.market_data.httpx.get", fake_get)
+    monkeypatch.setattr(httpx.AsyncClient, "get", fake_get)
 
-    result = get_stock_data("IBM")
+    result = asyncio.run(get_stock_data("IBM"))
 
     assert result["status"] == "failed"
     assert "connection refused" in result["reason"].lower()
 
 
 def test_get_stock_data_empty_ticker_fails_without_a_network_call(monkeypatch):
-    def fake_get(*args, **kwargs):
+    async def fake_get(self, *args, **kwargs):
         raise AssertionError("should never call Alpha Vantage for an empty ticker")
 
-    monkeypatch.setattr("app.agents.tools.market_data.httpx.get", fake_get)
+    monkeypatch.setattr(httpx.AsyncClient, "get", fake_get)
 
-    result = get_stock_data("   ")
+    result = asyncio.run(get_stock_data("   "))
 
     assert result == {"status": "failed", "reason": "ticker must not be empty"}
