@@ -36,8 +36,19 @@ class Settings(BaseSettings):
 
     # --- External AI / data APIs ---
     anthropic_api_key: str = ""
+    gemini_api_key: str = ""
     alpha_vantage_api_key: str = ""
     news_api_key: str = ""
+
+    # --- LLM provider selection (litellm-orchestrator branch) ---
+    # Which model the orchestrator calls, expressed as litellm's
+    # "<provider>/<model>" routing string split into two settings so a
+    # provider swap is a .env edit, not a code change. Defaults to Anthropic
+    # to match main; override both together when switching providers, since
+    # a provider/model mismatch (e.g. provider=gemini, model=claude-...)
+    # fails at the litellm call, not at settings load time.
+    llm_provider: str = "anthropic"
+    llm_model: str = "claude-opus-4-8"
 
     # --- RAG ---
     chroma_persist_dir: str = "./chroma_data"
