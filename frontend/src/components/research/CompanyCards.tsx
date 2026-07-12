@@ -32,7 +32,9 @@ const METRIC_LABELS: Record<string, string> = {
 
 function formatMetricValue(key: string, value: number) {
   if (key === "market_cap") {
-    return value >= 1e9 ? `$${(value / 1e9).toFixed(1)}B` : `$${(value / 1e6).toFixed(1)}M`;
+    if (value >= 1e12) return `$${(value / 1e12).toFixed(1)}T`;
+    if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
+    return `$${(value / 1e6).toFixed(1)}M`;
   }
   if (key === "volume") return value.toLocaleString();
   return value.toString();
