@@ -1,0 +1,70 @@
+[SYNTHETIC / ILLUSTRATIVE SAMPLE DATA — NOT AN ACTUAL SEC FILING]
+This document was written by the project author as placeholder content for
+testing a RAG (retrieval-augmented generation) pipeline. All figures,
+dates, executives, and statements below are fictional and invented for
+demonstration purposes only. Nothing here should be used for any
+investment, research, or business decision, and nothing here is copied
+from or paraphrased against any real Advanced Micro Devices filing.
+================================================================================
+
+ADVANCED MICRO DEVICES, INC. — Illustrative Form 10-K Excerpt (Sample
+Fiscal Year)
+
+Item 1. Business
+
+Advanced Micro Devices designs high-performance and adaptive computing
+products, including central processing units (CPUs), graphics processing
+units (GPUs), and embedded processors, sold into client, gaming, data
+center, and embedded end markets. In this illustrative fiscal year, Data
+Center segment sample revenue was approximately $14.8 billion, up
+roughly 94% over the prior illustrative period, reflecting increased
+adoption of our Instinct accelerator product line by cloud and
+enterprise customers. Client segment sample revenue was approximately
+$7.1 billion, up modestly, as PC market conditions showed early signs of
+stabilization. Gaming segment sample revenue, which includes
+semi-custom console processors, declined approximately 12% on lower
+console unit shipments in the illustrative period.
+
+Item 1A. Risk Factors
+
+Reliance on Third-Party Manufacturing. We do not own or operate our own
+semiconductor fabrication facilities and depend on external foundries for
+substantially all of our wafer supply. Constraints in leading-edge
+process capacity, or unfavorable changes in our pricing arrangements
+with foundry partners, could adversely affect our illustrative sample
+gross margins and our ability to fulfill customer orders.
+
+Intense Competition. We compete against larger, well-resourced
+competitors across each of our product categories, including in
+accelerated computing, where competitors have established software
+ecosystems that create switching costs for customers. Our ability to
+grow Data Center segment sample revenue depends in part on continued
+investment in our own open software stack.
+
+Customer and Market Concentration. A small number of hyperscale
+customers represent a substantial and increasing share of our Data
+Center segment's illustrative sample revenue. Additionally, our Gaming
+segment's semi-custom sample revenue depends on a limited number of
+console partners, and console generation transitions can create
+significant period-over-period revenue volatility.
+
+Inventory and Demand Forecasting. We must forecast demand for our
+products several quarters in advance of shipment given foundry lead
+times. Inaccurate forecasts, whether due to macroeconomic conditions or
+rapidly shifting customer AI infrastructure spending plans, could result
+in excess inventory or, alternatively, an inability to meet demand,
+either of which could adversely affect our illustrative sample results.
+
+Item 7. Management's Discussion and Analysis (Forward-Looking Statements)
+
+This excerpt contains forward-looking statements regarding anticipated
+Data Center segment sample revenue growth, expected new product
+introductions in our Instinct accelerator roadmap, and projected
+improvement in illustrative sample gross margin over future periods.
+These statements involve substantial risks and uncertainties, including
+those described above, and actual illustrative results may differ
+materially from those projected. Readers should not place undue reliance
+on these sample forward-looking statements, which are current only as of
+the date of this illustrative document.
+
+[END OF SYNTHETIC SAMPLE EXCERPT]
