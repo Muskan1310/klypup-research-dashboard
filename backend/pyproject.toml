@@ -30,6 +30,18 @@ dependencies = [
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.poetry]
+# This is an application (a FastAPI service run via `poetry run uvicorn
+# app.main:app`), not a redistributable library — there's no
+# `klypup_backend/` package for Poetry to build and install into the venv
+# under the project's own name, only `app/`. Without this, `poetry
+# install` fails on a genuinely fresh clone/venv with "No file/folder
+# found for package klypup-backend" while trying to install the project
+# as its own dependency; package-mode = false tells Poetry to only manage
+# the virtualenv/dependencies, never try to build+install the project
+# itself.
+package-mode = false
+
 [dependency-groups]
 dev = [
     "pytest (>=9.1.1,<10.0.0)",
