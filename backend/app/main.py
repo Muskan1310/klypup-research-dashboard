@@ -17,6 +17,7 @@ from app.api.auth import router as auth_router
 from app.api.orgs import router as orgs_router
 from app.api.reports import router as reports_router
 from app.api.research import router as research_router
+from app.api.watchlist import router as watchlist_router
 from app.core.config import settings
 
 app = FastAPI(title=settings.app_name)
@@ -25,6 +26,7 @@ app.include_router(auth_router, prefix="/auth")
 app.include_router(orgs_router, prefix="/orgs")
 app.include_router(research_router, prefix="/research")
 app.include_router(reports_router, prefix="/reports")
+app.include_router(watchlist_router, prefix="/watchlist")
 
 # CORS: allow the Next.js dev server to call this API.
 # Locked to explicit origins, not "*" — even in an assessment, an open
