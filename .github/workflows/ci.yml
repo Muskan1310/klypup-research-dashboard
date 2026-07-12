@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      # Same image/credentials as docker-compose.yml — Settings.database_url
+      # (app/core/config.py) defaults to exactly this connection string, so
+      # no extra env vars are needed to point the app/tests at it.
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: klypup
+          POSTGRES_PASSWORD: klypup
+          POSTGRES_DB: klypup
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U klypup"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-${{ runner.os }}-${{ hashFiles('backend/poetry.lock') }}
+
+      - name: Install dependencies
+        run: poetry install --no-interaction
+
+      - name: Run migrations
+        run: poetry run alembic upgrade head
+
+      - name: Lint (ruff)
+        run: poetry run ruff check .
+
+      - name: Test (pytest)
+        # RAG tests exercise a real, embedded Chroma collection — its
+        # default embedding function downloads a small ONNX model from
+        # Hugging Face on first use, so this step needs outbound network
+        # access (available by default on GitHub-hosted runners).
+        run: poetry run pytest -q
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build
+        run: pnpm build

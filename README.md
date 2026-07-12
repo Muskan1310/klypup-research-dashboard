@@ -110,7 +110,7 @@ Visit `http://localhost:3000` → log in with a demo account above.
 
 ```bash
 cd backend
-poetry run pytest        # 53 tests: services, tenancy/cross-org isolation, orchestrator, RAG, API routes
+poetry run pytest        # 55 tests: services, tenancy/cross-org isolation, orchestrator, RAG, API routes
 poetry run ruff check .
 ```
 
@@ -120,6 +120,11 @@ pnpm lint
 npx tsc --noEmit
 pnpm build
 ```
+
+All of the above also run in CI (`.github/workflows/ci.yml`) on every push to
+`main` and every pull request — backend against a real Postgres service
+container running the same Alembic migration this README's setup steps
+use, frontend as its own parallel job.
 
 ## Project structure
 
