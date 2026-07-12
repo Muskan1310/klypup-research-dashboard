@@ -18,7 +18,7 @@ graph TB
     end
 
     subgraph "FastAPI (backend/)"
-        Routes["api/ — auth, orgs, research, reports<br/>thin route handlers"]
+        Routes["api/ — auth, orgs, research,<br/>reports, watchlist — thin route handlers"]
         Tenancy["core/tenancy.py<br/>get_current_user, get_scoped_db"]
         Orchestrator["agents/orchestrator.py<br/>two-pass tool-calling loop + TTL cache"]
         RAG["rag/ — ingest.py, retriever.py"]
@@ -259,6 +259,9 @@ from a request body or query param, anywhere.
 | `GET` | `/reports` | Bearer | — | `200` `{reports: [{id, query_text, created_at}], total}` (org-scoped) |
 | `GET` | `/reports/{id}` | Bearer | — | `200` full report or `404` (own-org-missing and cross-org both 404) |
 | `DELETE` | `/reports/{id}` | Bearer | — | `204` or `404` |
+| `POST` | `/watchlist` | Bearer | `{ticker}` | `201` `{id, ticker, added_at}` (dedupes per org) |
+| `GET` | `/watchlist` | Bearer | — | `200` `{items: [...]}` (org-scoped) |
+| `DELETE` | `/watchlist/{id}` | Bearer | — | `204` or `404` |
 | `GET` | `/health` | none | — | `200` `{status, service}` — liveness only, no DB dependency |
 
 Full request/response Pydantic schemas: `backend/app/schemas/`. Live

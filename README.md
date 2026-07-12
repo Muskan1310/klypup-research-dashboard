@@ -20,8 +20,9 @@ original working design docs this was built from.
 | | |
 |---|---|
 | ![Login](docs/screenshots/01-login.png) Login | ![Signup](docs/screenshots/02-signup.png) Signup (create org / join by invite) |
-| ![Dashboard](docs/screenshots/03-dashboard-empty.png) Research query dashboard | ![History](docs/screenshots/04-history-list.png) Saved research history |
-| ![Report detail](docs/screenshots/05-report-detail-tesla.png) Saved report — company card, sentiment news, risk summary w/ sources | ![Comparison](docs/screenshots/06-report-detail-comparison.png) Saved report — multi-company comparison table |
+| ![Dashboard](docs/screenshots/03-dashboard-empty.png) Dashboard home — query box, recent research, watchlist | ![History](docs/screenshots/04-history-list.png) Saved research history |
+| ![Report detail](docs/screenshots/05-report-detail-tesla.png) Saved report — company card, performance chart, sentiment news, risk summary w/ sources | ![Comparison](docs/screenshots/06-report-detail-comparison.png) Saved report — multi-company comparison table + chart |
+| ![Dashboard with activity](docs/screenshots/07-dashboard-with-activity.png) Dashboard home after adding a company to the watchlist | |
 
 ---
 
@@ -152,8 +153,7 @@ klypup/
 ## Known limitations
 
 - **No tag/search filtering** on saved research history — deliberately cut for time, noted inline in the UI itself.
-- **Watchlist** — the `watchlist_items` table exists in the schema but has no service/API/UI yet; the assessment marks this "recommended," not required.
-- **No stock performance chart** — cards, comparison table, sentiment news, and risk summary are all built; a chart component isn't yet.
+- **Performance chart shows today's % move, not a historical time series** — the market data tool only fetches a current-day snapshot (Alpha Vantage's `GLOBAL_QUOTE`/`OVERVIEW`); a real multi-day line chart would need a third API call per ticker on an already-tight 25-req/day free tier this project has genuinely exhausted more than once. The bar chart on each result is real data (`change_percent`, already fetched), just not a price-over-time series.
 - **`docker-compose.yml` is Postgres-only** — backend/frontend run natively (`poetry run uvicorn` / `pnpm dev`) for faster hot-reload during development, not containerized end-to-end.
 - **In-process cache, not Redis** — query results cache for 15 minutes in a plain dict (actively evicted, not just lazy) in the single backend process. Documented, argued trade-off — see DECISIONS.md and TDD Section 12.
 - **No live deployment** — runs locally only; see DECISIONS.md for what a deploy would take.

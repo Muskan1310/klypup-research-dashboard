@@ -5,7 +5,7 @@ Deliberately minimal for Milestone 0: app instance, CORS (frontend needs
 to call this from a different origin during local dev), and a single
 health check route to prove the skeleton actually runs end-to-end.
 
-Route modules (auth, research, reports, orgs) get registered here via
+Route modules (auth, research, reports, orgs, watchlist) get registered here via
 `app.include_router(...)` starting Milestone 1 — main.py itself should
 never grow route logic directly, only wiring.
 """

@@ -136,3 +136,19 @@ export interface ReportDetailResponse {
   created_at: string;
   updated_at: string;
 }
+
+// --- app/schemas/watchlist.py ---
+
+export interface WatchlistItemCreate {
+  ticker: string;
+}
+
+export interface WatchlistItemResponse {
+  id: number;
+  ticker: string;
+  added_at: string;
+}
+
+export interface WatchlistResponse {
+  items: WatchlistItemResponse[];
+}

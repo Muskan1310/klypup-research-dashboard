@@ -1,3 +1,4 @@
+import { AddToWatchlistButton } from "@/components/research/AddToWatchlistButton";
 import type { CompanyCard } from "@/lib/types";
 
 function formatPrice(price: number | null) {
@@ -54,8 +55,11 @@ export function CompanyCards({ cards }: { cards: CompanyCard[] }) {
             <span className="font-semibold text-slate-900 dark:text-white">{card.ticker}</span>
             <ChangeBadge changePercent={card.change_percent} />
           </div>
-          <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
-            {formatPrice(card.price)}
+          <div className="mt-1 flex items-end justify-between">
+            <span className="text-2xl font-semibold text-slate-900 dark:text-white">
+              {formatPrice(card.price)}
+            </span>
+            <AddToWatchlistButton ticker={card.ticker} />
           </div>
 
           {card.key_metrics && (
