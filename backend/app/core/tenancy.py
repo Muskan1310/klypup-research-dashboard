@@ -120,6 +120,14 @@ class ScopedSession:
     def refresh(self, instance) -> None:
         self._session.refresh(instance)
 
+    def delete(self, instance) -> None:
+        # Same trust boundary as add()/refresh(): this doesn't itself check
+        # org_id, it relies on the caller only ever passing an instance
+        # that was fetched through query_scoped() in the first place — a
+        # route deleting a row it never proved it owns would be a bug at
+        # the call site, not something this passthrough can catch.
+        self._session.delete(instance)
+
 
 def get_scoped_db(
     current_user: CurrentUser = Depends(get_current_user),
