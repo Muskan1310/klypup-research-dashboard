@@ -68,28 +68,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # setup-node's built-in `cache: "pnpm"` option shells out to `pnpm
-      # store path` to resolve a cache key — which fails if pnpm doesn't
-      # exist yet. corepack (bundled with Node) is what provides pnpm, so
-      # Node has to come first, pnpm second, and the pnpm store cache is
-      # therefore a separate, explicit step rather than setup-node's
-      # built-in option.
+      # pnpm/action-setup installs a specific, pinned pnpm version
+      # directly — deliberately not `corepack enable` + a bare `pnpm`
+      # invocation: with no `packageManager` field in package.json,
+      # corepack has nothing to resolve on a fresh runner's first pnpm
+      # call, which is exactly what broke setup-node's built-in
+      # `cache: "pnpm"` option (it shells out to `pnpm store path` before
+      # pnpm actually exists). Version pinned to match local dev.
+      - uses: pnpm/action-setup@v4
+        with:
+          version: "11.12.0"
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-
-      - name: Enable pnpm
-        run: corepack enable
-
-      - name: Get pnpm store path
-        id: pnpm-store
-        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
-
-      - name: Cache pnpm store
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.pnpm-store.outputs.path }}
-          key: pnpm-${{ runner.os }}-${{ hashFiles('frontend/pnpm-lock.yaml') }}
+          cache: "pnpm"
+          cache-dependency-path: frontend/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
