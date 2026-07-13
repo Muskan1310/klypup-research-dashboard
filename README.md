@@ -50,7 +50,7 @@ original working design docs this was built from.
 
 - Python 3.11–3.13 (LiteLLM currently caps at `<3.14`)
 - [Poetry](https://python-poetry.org/docs/#installation)
-- Node.js 20+ and [pnpm](https://pnpm.io/installation) (`corepack enable` if you don't have pnpm yet)
+- Node.js 22.13+ (pnpm 11.x requires it — verified via a real CI failure on Node 20) and [pnpm](https://pnpm.io/installation) (`corepack enable` if you don't have pnpm yet)
 - Docker (for Postgres)
 - API keys, all free-tier:
   - [Alpha Vantage](https://www.alphavantage.co/support/#api-key) (market data — instant)

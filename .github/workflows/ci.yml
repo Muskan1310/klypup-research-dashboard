@@ -79,9 +79,12 @@ jobs:
         with:
           version: "11.12.0"
 
+      # pnpm 11.x requires Node >=22.13 (it failed hard on Node 20 with
+      # "No such built-in module: node:sqlite") — matching local dev's
+      # Node 24 here, not an arbitrarily-picked "20".
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "pnpm"
           cache-dependency-path: frontend/pnpm-lock.yaml
 
