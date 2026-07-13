@@ -68,14 +68,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # setup-node's built-in `cache: "pnpm"` option shells out to `pnpm
+      # store path` to resolve a cache key — which fails if pnpm doesn't
+      # exist yet. corepack (bundled with Node) is what provides pnpm, so
+      # Node has to come first, pnpm second, and the pnpm store cache is
+      # therefore a separate, explicit step rather than setup-node's
+      # built-in option.
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "pnpm"
-          cache-dependency-path: frontend/pnpm-lock.yaml
 
       - name: Enable pnpm
         run: corepack enable
+
+      - name: Get pnpm store path
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('frontend/pnpm-lock.yaml') }}
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
