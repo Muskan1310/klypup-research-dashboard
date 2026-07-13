@@ -26,6 +26,7 @@ out/
 
 # --- Claude Code local state ---
 .claude/
+CLAUDE.md
 
 # --- Misc ---
 *.log
