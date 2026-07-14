@@ -71,6 +71,7 @@ docker compose up -d
 cd backend
 cp .env.example .env        # fill in your real keys + a random JWT_SECRET_KEY
 poetry install
+poetry run alembic upgrade head    # creates the schema — required before first run
 poetry run uvicorn app.main:app --reload --port 8000
 ```
 
@@ -110,7 +111,7 @@ Visit `http://localhost:3000` → log in with a demo account above.
 
 ```bash
 cd backend
-poetry run pytest        # 55 tests: services, tenancy/cross-org isolation, orchestrator, RAG, API routes
+poetry run pytest        # 57 tests: services, tenancy/cross-org isolation, orchestrator, RAG, API routes
 poetry run ruff check .
 ```
 
@@ -157,7 +158,7 @@ klypup/
 
 ## Known limitations
 
-- **No tag/search filtering** on saved research history yet — a deliberate scope call for this pass, noted inline in the UI itself.
+- **No search** on saved research history yet — a deliberate scope call for this pass, noted inline in the UI itself. Tags exist and are editable per-report.
 - **Performance chart is today's % move, not a historical time series** — a deliberate choice: a real multi-day line chart would need a third Alpha Vantage call per ticker on top of an already rate-limited free tier, for a demo-scale improvement in a place that already renders real data (`change_percent`) honestly.
 - **`docker-compose.yml` covers Postgres only** — backend/frontend run natively (`poetry run uvicorn` / `pnpm dev`) for faster hot-reload during development; full containerization is a natural next step, not a required one for local setup.
 - **In-process cache, not Redis** — query results cache for 15 minutes in a plain dict (actively evicted, not just lazy) in the single backend process. A documented, argued trade-off for a single-instance deployment — see DECISIONS.md and TDD Section 12.
