@@ -257,8 +257,9 @@ avoids a dead dependency without hand-rolling any actual cryptography
 token and returns a `CurrentUser`; nothing downstream re-parses a token or
 re-derives identity any other way. `require_role(UserRole.ADMIN)` is the
 same dependency with one more check on top, used to gate admin-only
-routes like `POST /orgs/invite-codes` — an analyst hitting it gets a
-`403` before the route body ever runs.
+routes — `POST /orgs/invite-codes` (invites users) and `GET /orgs/members`
+(manages workspace: the org's member roster) — an analyst hitting either
+gets a `403` before the route body ever runs.
 
 **Why the frontend stores the token in an httpOnly cookie, not
 `localStorage`:** `localStorage` is readable by any JavaScript running on
@@ -323,10 +324,12 @@ from a request body or query param, anywhere.
 | `POST` | `/auth/signup` | none | `{email, password, org_name?, org_invite_code?}` | `201` `{access_token, token_type, user}` |
 | `POST` | `/auth/login` | none | `{email, password}` | `200` `{access_token, token_type, user}` or `401` |
 | `POST` | `/orgs/invite-codes` | Bearer, **Admin only** | — | `201` `{code, expires_at}` or `403` |
+| `GET` | `/orgs/members` | Bearer, **Admin only** | — | `200` `{members: [{id, email, role, created_at}]}` (org-scoped) or `403` |
 | `POST` | `/research` | Bearer | `{query}` | `200` `ResearchQueryResponse` (bimodal — see Section 4) or `503` on LLM failure |
 | `POST` | `/reports` | Bearer | `{query_text, structured_result}` | `201` `ReportDetailResponse` |
 | `GET` | `/reports` | Bearer | — | `200` `{reports: [{id, query_text, created_at}], total}` (org-scoped) |
 | `GET` | `/reports/{id}` | Bearer | — | `200` full report or `404` (own-org-missing and cross-org both 404) |
+| `PATCH` | `/reports/{id}` | Bearer | `{tags}` | `200` full report (updated tags) or `404` |
 | `DELETE` | `/reports/{id}` | Bearer | — | `204` or `404` |
 | `POST` | `/watchlist` | Bearer | `{ticker}` | `201` `{id, ticker, added_at}` (dedupes per org) |
 | `GET` | `/watchlist` | Bearer | — | `200` `{items: [...]}` (org-scoped) |

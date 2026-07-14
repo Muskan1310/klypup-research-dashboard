@@ -128,8 +128,10 @@ irrelevant text.
   for a single backend instance; documented as the thing to swap for
   Redis at real multi-instance scale (`docs/TDD.md` Section 12 frames
   this the same way).
-- **No tag/search filtering on saved research** — the history list is
-  browse-by-recency for this pass; noted inline in the UI itself.
+- **No search on saved research** — the history list is browse-by-recency
+  for this pass; noted inline in the UI itself. Tags exist and are
+  editable per-report (`PATCH /reports/{id}`), just not yet used to filter
+  the list view.
 - **Docker Compose covers Postgres only** — backend/frontend run natively
   for faster hot-reload during active development; full containerization
   is the natural next step for a deployed environment, not something a
