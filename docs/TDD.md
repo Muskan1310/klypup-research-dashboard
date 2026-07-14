@@ -214,7 +214,7 @@ Concretely: instead of every service function remembering to add `.filter(org_id
 ## 11. Error Handling Strategy
 
 - **External API failures:** each tool call wrapped in try/except with a timeout; failure produces a structured `{"status": "failed", "reason": ...}` result rather than an exception bubbling up — the synthesis step is explicitly told which sources failed and asked to note that in the output, rather than silently omitting it (this is the graceful-degradation requirement made concrete).
-- **LLM API failures/rate limits:** retry with backoff for transient errors; if truly unavailable, return a clear error state to the frontend rather than a generic 500 — the frontend shows "AI service temporarily unavailable" instead of crashing.
+- **LLM API failures/rate limits:** ~~retry with backoff for transient errors~~ **update, post-implementation:** not built — `POST /research` catches the provider's error and returns a clean 503 immediately, no retry. Retry-with-backoff is real, listed future work (see DECISIONS.md's "what would you improve with 2 more weeks"), not something to claim as already in place. What *is* true as originally planned: the frontend shows "AI service temporarily unavailable" rather than a generic 500 or a crash — that half of this line held.
 - **Malformed LLM structured output:** validated against a Pydantic schema before touching the DB or frontend; on failure, one bounded retry asking the model to correct its output format, then a clean failure state if it still doesn't validate.
 - **Frontend:** every async data-fetching component has explicit loading/error/empty states — not just a happy path.
 
@@ -237,7 +237,7 @@ Concretely: instead of every service function remembering to add `.filter(org_id
 - Secrets (API keys, JWT signing key) only via environment variables, never committed — `.env.example` documents required vars without values.
 - `org_id` is **always** derived from the authenticated JWT, never accepted from client input — closing the most obvious tenant-isolation bypass.
 - Input validation on all endpoints via Pydantic schemas (reject malformed/oversized queries before they reach the LLM — also a cost-control measure, since an unbounded query could balloon token usage).
-- Rate limiting per user/org on the `/research` endpoint specifically — this is both a security control (abuse prevention) and a cost control (prevents runaway LLM spend from a single bad actor or bug).
+- ~~Rate limiting per user/org on the `/research` endpoint specifically~~ **update, post-implementation:** not built. No rate-limiting middleware exists on any route. The TTL query cache (Section 12) reduces redundant *identical* calls, but that's a cost optimization for repeats, not a rate limit against a single user/org hammering the endpoint with distinct queries — a real gap, worth naming honestly rather than leaving this line standing as if it were shipped.
 - Passwords hashed with bcrypt (never stored plaintext, never even logged).
 
 ---
