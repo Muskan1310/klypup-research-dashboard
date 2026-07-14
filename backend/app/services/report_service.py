@@ -74,3 +74,18 @@ def delete_report(db: ScopedSession, report_id: int) -> bool:
     db.delete(report)
     db.commit()
     return True
+
+
+def update_report_tags(db: ScopedSession, report_id: int, tags: list[str]) -> ResearchReport | None:
+    """Returns None under the same 404-not-403 reasoning as get_report — the
+    route maps None to 404. A report's structured_result is an immutable
+    snapshot of a completed AI run (see save_report), so tags are the one
+    field on a saved report a user can actually revise after the fact.
+    """
+    report = get_report(db, report_id)
+    if report is None:
+        return None
+    report.tags = tags
+    db.commit()
+    db.refresh(report)
+    return report

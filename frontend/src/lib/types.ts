@@ -137,6 +137,10 @@ export interface ReportDetailResponse {
   updated_at: string;
 }
 
+export interface UpdateReportTagsRequest {
+  tags: string[];
+}
+
 // --- app/schemas/watchlist.py ---
 
 export interface WatchlistItemCreate {

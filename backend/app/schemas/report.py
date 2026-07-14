@@ -1,6 +1,5 @@
 """Request/response schemas for saved research reports (TDD Section 4,
-Section 5). Minimal CRUD contract — no tag/search filtering yet (task's
-explicit, deliberate cut for this pass).
+Section 5).
 """
 
 from datetime import datetime
@@ -19,6 +18,15 @@ class SaveReportRequest(BaseModel):
 
     query_text: str = Field(min_length=1, max_length=2000)
     structured_result: StructuredResult
+
+
+class UpdateReportTagsRequest(BaseModel):
+    """The one field on an already-saved report a user can revise —
+    structured_result is an immutable snapshot (see SaveReportRequest), so
+    'update' here means re-tagging, not re-running or editing the result.
+    """
+
+    tags: list[str] = Field(max_length=20)
 
 
 class ReportListItem(BaseModel):

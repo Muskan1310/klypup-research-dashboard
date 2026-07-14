@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ReportActions } from "@/components/dashboard/ReportActions";
 import { StructuredResultView } from "@/components/research/StructuredResultView";
 import { BACKEND_URL } from "@/lib/backend";
 import { getAuthToken } from "@/lib/server-auth";
@@ -46,6 +47,7 @@ export default async function SavedReportPage({
         </h1>
       </div>
       <StructuredResultView result={report.structured_result} />
+      <ReportActions reportId={report.id} initialTags={report.tags ?? []} />
     </div>
   );
 }

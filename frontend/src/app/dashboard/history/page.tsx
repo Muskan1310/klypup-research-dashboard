@@ -39,8 +39,8 @@ export default async function HistoryPage() {
       <div>
         <h1 className="text-lg font-semibold text-slate-900 dark:text-white">Saved research</h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Reports your org has saved. Tags and search aren&apos;t built yet — a known
-          simplification for this pass.
+          Reports your org has saved. Open a report to tag or delete it — search isn&apos;t built
+          yet, a known simplification for this pass.
         </p>
       </div>
 

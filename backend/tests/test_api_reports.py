@@ -175,3 +175,49 @@ def test_get_and_delete_nonexistent_report_returns_404(client, db_session):
         assert client.delete("/reports/999999999", headers=_auth_header(token)).status_code == 404
     finally:
         _cleanup(db_session, user_ids, org_ids)
+
+
+def test_update_report_tags_roundtrip_and_cross_tenant_404(client, db_session):
+    user_ids: list[int] = []
+    org_ids: list[int] = []
+    try:
+        org_a = _signup_founder(client, "tags-org-a-founder")
+        user_ids.append(org_a["user"]["id"])
+        org_ids.append(org_a["user"]["org_id"])
+        token_a = org_a["access_token"]
+
+        org_b = _signup_founder(client, "tags-org-b-founder")
+        user_ids.append(org_b["user"]["id"])
+        org_ids.append(org_b["user"]["org_id"])
+        token_b = org_b["access_token"]
+
+        save_resp = client.post(
+            "/reports",
+            headers=_auth_header(token_a),
+            json={"query_text": "Org A's private research", "structured_result": STRUCTURED_RESULT},
+        )
+        assert save_resp.status_code == 201, save_resp.text
+        report_id = save_resp.json()["id"]
+        assert save_resp.json()["tags"] is None
+
+        # Org B, holding a valid JWT for its own org, must get 404 — not
+        # 403 — trying to retag org A's report. Same reasoning as the
+        # cross-tenant GET/DELETE test above.
+        patch_as_b = client.patch(
+            f"/reports/{report_id}", headers=_auth_header(token_b), json={"tags": ["hostile"]}
+        )
+        assert patch_as_b.status_code == 404
+
+        patch_as_a = client.patch(
+            f"/reports/{report_id}",
+            headers=_auth_header(token_a),
+            json={"tags": ["ev", "watchlist"]},
+        )
+        assert patch_as_a.status_code == 200, patch_as_a.text
+        assert patch_as_a.json()["tags"] == ["ev", "watchlist"]
+
+        # Confirmed persisted, not just echoed back in the response.
+        get_resp = client.get(f"/reports/{report_id}", headers=_auth_header(token_a))
+        assert get_resp.json()["tags"] == ["ev", "watchlist"]
+    finally:
+        _cleanup(db_session, user_ids, org_ids)

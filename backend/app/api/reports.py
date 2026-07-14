@@ -14,6 +14,7 @@ from app.schemas.report import (
     ReportListItem,
     ReportListResponse,
     SaveReportRequest,
+    UpdateReportTagsRequest,
 )
 from app.services import report_service
 
@@ -60,3 +61,16 @@ def delete_report(report_id: int, db: ScopedSession = Depends(get_scoped_db)) ->
     if not deleted:
         # Same 404-not-403 reasoning as GET /reports/{id} above.
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
+
+
+@router.patch("/{report_id}", response_model=ReportDetailResponse)
+def update_report_tags(
+    report_id: int,
+    request: UpdateReportTagsRequest,
+    db: ScopedSession = Depends(get_scoped_db),
+) -> ReportDetailResponse:
+    report = report_service.update_report_tags(db, report_id, request.tags)
+    if report is None:
+        # Same 404-not-403 reasoning as GET /reports/{id} above.
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
+    return ReportDetailResponse.model_validate(report)
