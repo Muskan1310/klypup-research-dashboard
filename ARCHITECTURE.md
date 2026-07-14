@@ -172,7 +172,7 @@ vectors live in Chroma, not Postgres; this row is only ingestion metadata
 letting a Chroma hit map back to a human-readable source.
 
 `org_id` is indexed on every tenant-owned table specifically because
-`ScopedSession.query_scoped()` (Section 5 below) filters on it on every
+`ScopedSession.query_scoped()` (Section 6 below) filters on it on every
 single query — an unindexed `org_id` would make that filter a sequential
 scan under any real data volume.
 
@@ -210,7 +210,76 @@ what `agents/orchestrator.py`'s tool definitions demonstrate directly.
 `asyncio.to_thread` so it participates in the same `asyncio.gather()` as
 the other two without blocking the event loop for its duration.
 
-## 5. Multi-Tenant Data Flow
+## 5. Authentication & Authorization Flow
+
+```mermaid
+sequenceDiagram
+    participant U as Browser
+    participant N as Next.js BFF<br/>(/api/auth/*)
+    participant F as FastAPI<br/>(/auth/signup, /auth/login)
+    participant S as core.security<br/>bcrypt + jose.jwt
+    participant D as Postgres
+
+    U->>N: POST /api/auth/signup<br/>{email, password, org_name OR org_invite_code}
+    N->>F: POST /auth/signup (same body)
+    F->>D: founding org? create Organization + User (role=admin)<br/>joining? validate invite_code, create User (role=analyst)
+    F->>S: hash_password() — bcrypt.hashpw, direct (no passlib)
+    F->>S: create_access_token(user_id, org_id, role)<br/>jose.jwt.encode, 24h expiry
+    S-->>F: signed JWT
+    F-->>N: 201 {access_token, token_type, user}
+    N->>N: set-cookie: httpOnly, sameSite=lax<br/>(access_token never in the JSON body sent onward)
+    N-->>U: 201 {user} — no token in the browser-visible response
+
+    Note over U,D: Every later request:
+    U->>N: any request (cookie sent automatically by the browser)
+    N->>F: same request, Authorization: Bearer <jwt><br/>(N reads the httpOnly cookie server-side, attaches the header)
+    F->>S: decode_access_token() — signature + expiry checked
+    S-->>F: CurrentUser(user_id, org_id, role) or raise JWTError
+    F-->>N: 401 if invalid/expired, else proceed
+```
+
+**Signup issues the JWT the same way whether founding a new org or joining
+one** — the only branch is whether a new `Organization` row gets created
+(role becomes `admin`) or an existing `invite_code` gets validated and
+consumed (role becomes `analyst`). Either path, `org_id` in the resulting
+token comes from a row the server just created or looked up — never from
+anything the client typed in.
+
+**Passwords:** hashed with `bcrypt.hashpw`/verified with `bcrypt.checkpw`
+directly — not through `passlib`, whose last release (1.7.4) has a broken
+bcrypt-handler self-test against `bcrypt>=4.1`. Calling bcrypt directly
+avoids a dead dependency without hand-rolling any actual cryptography
+(CLAUDE.md hard constraint: no hand-rolled crypto).
+
+**The JWT itself** carries three claims — `sub` (user id), `org_id`,
+`role` — and a 24-hour expiry. Every protected route depends on
+`get_current_user` (`core/tenancy.py`), which decodes and validates the
+token and returns a `CurrentUser`; nothing downstream re-parses a token or
+re-derives identity any other way. `require_role(UserRole.ADMIN)` is the
+same dependency with one more check on top, used to gate admin-only
+routes like `POST /orgs/invite-codes` — an analyst hitting it gets a
+`403` before the route body ever runs.
+
+**Why the frontend stores the token in an httpOnly cookie, not
+`localStorage`:** `localStorage` is readable by any JavaScript running on
+the page — including a malicious script injected through an unrelated
+bug elsewhere in the app. An `httpOnly` cookie is invisible to
+client-side JS entirely; only a server can read or set it. Since only a
+server context can set that kind of cookie, the Next.js Route Handlers
+under `src/app/api/*` act as a thin backend-for-frontend: they call
+FastAPI, receive the token in the JSON body, and re-issue it to the
+browser as an httpOnly cookie — the actual token string is never in a
+form client-side JavaScript could read, only ever passed server-to-server
+after that point.
+
+**Proven, not just asserted:** `tests/test_auth_service.py` covers
+signup/login success and failure paths (duplicate email, wrong password,
+expired/reused/invalid invite codes) directly against the service layer;
+`tests/test_api_orgs.py` proves the RBAC boundary over real HTTP — an
+analyst gets `403` on an admin-only route, the same admin account gets
+`201` on the identical call.
+
+## 6. Multi-Tenant Data Flow
 
 ```mermaid
 flowchart LR
@@ -243,7 +312,7 @@ unauthorized caller that the report exists somewhere else. Then the same
 report is shown still fully accessible/deletable by org A, proving the
 404s were tenant-scoping and not a broken route.
 
-## 6. API Design
+## 7. API Design
 
 Every route except `/auth/*` and `/health` requires `Authorization: Bearer
 <jwt>`. `org_id` is resolved from the token server-side — never accepted
