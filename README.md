@@ -49,10 +49,18 @@ original working design docs this was built from.
 ## Prerequisites
 
 - Python 3.11–3.13 (LiteLLM currently caps at `<3.14`)
-- [Poetry](https://python-poetry.org/docs/#installation) — if `poetry` isn't
-  found after installing, its install location isn't on your shell's
-  `PATH` yet; the installer prints the exact line to add, or see
-  [Poetry's PATH troubleshooting](https://python-poetry.org/docs/#installing-with-the-official-installer)
+- [Poetry](https://python-poetry.org/docs/#installation) — if `poetry --version`
+  doesn't work after installing, the official installer put it in
+  `~/.local/bin`, but that directory isn't always on your shell's `PATH`
+  yet. For zsh (macOS's default shell):
+
+  ```bash
+  echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+  source ~/.zshrc
+  ```
+
+  If your install used a different method, `ls ~/.local/bin/poetry` (or
+  check your installer's own output) tells you whether this applies.
 - Node.js 22.13+ (pnpm 11.x's minimum supported version) and [pnpm](https://pnpm.io/installation) (`corepack enable` if you don't have pnpm yet)
 - Docker (for Postgres)
 - API keys, all free-tier:
@@ -61,6 +69,10 @@ original working design docs this was built from.
   - **One** LLM provider: [Anthropic](https://console.anthropic.com/) **or** [Google AI Studio](https://aistudio.google.com/apikey) (Gemini)
 
 ## Setup
+
+Every command below assumes you're in the cloned repo's root directory
+(the one containing `docker-compose.yml`) unless a step says otherwise —
+run `cd` into it first if you're not already there.
 
 ### 1. Database
 
