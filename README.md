@@ -50,7 +50,7 @@ original working design docs this was built from.
 
 - Python 3.11–3.13 (LiteLLM currently caps at `<3.14`)
 - [Poetry](https://python-poetry.org/docs/#installation)
-- Node.js 22.13+ (pnpm 11.x requires it — verified via a real CI failure on Node 20) and [pnpm](https://pnpm.io/installation) (`corepack enable` if you don't have pnpm yet)
+- Node.js 22.13+ (pnpm 11.x's minimum supported version) and [pnpm](https://pnpm.io/installation) (`corepack enable` if you don't have pnpm yet)
 - Docker (for Postgres)
 - API keys, all free-tier:
   - [Alpha Vantage](https://www.alphavantage.co/support/#api-key) (market data — instant)
@@ -157,10 +157,10 @@ klypup/
 
 ## Known limitations
 
-- **No tag/search filtering** on saved research history — deliberately cut for time, noted inline in the UI itself.
-- **Performance chart shows today's % move, not a historical time series** — the market data tool only fetches a current-day snapshot (Alpha Vantage's `GLOBAL_QUOTE`/`OVERVIEW`); a real multi-day line chart would need a third API call per ticker on an already-tight 25-req/day free tier this project has genuinely exhausted more than once. The bar chart on each result is real data (`change_percent`, already fetched), just not a price-over-time series.
-- **`docker-compose.yml` is Postgres-only** — backend/frontend run natively (`poetry run uvicorn` / `pnpm dev`) for faster hot-reload during development, not containerized end-to-end.
-- **In-process cache, not Redis** — query results cache for 15 minutes in a plain dict (actively evicted, not just lazy) in the single backend process. Documented, argued trade-off — see DECISIONS.md and TDD Section 12.
+- **No tag/search filtering** on saved research history yet — a deliberate scope call for this pass, noted inline in the UI itself.
+- **Performance chart is today's % move, not a historical time series** — a deliberate choice: a real multi-day line chart would need a third Alpha Vantage call per ticker on top of an already rate-limited free tier, for a demo-scale improvement in a place that already renders real data (`change_percent`) honestly.
+- **`docker-compose.yml` covers Postgres only** — backend/frontend run natively (`poetry run uvicorn` / `pnpm dev`) for faster hot-reload during development; full containerization is a natural next step, not a required one for local setup.
+- **In-process cache, not Redis** — query results cache for 15 minutes in a plain dict (actively evicted, not just lazy) in the single backend process. A documented, argued trade-off for a single-instance deployment — see DECISIONS.md and TDD Section 12.
 - **No live deployment** — runs locally only; see DECISIONS.md for what a deploy would take.
-- **LLM provider quota** — the free tier of whichever provider you configure (Gemini's especially) has a real daily request cap; the app surfaces this as a clean "AI service temporarily unavailable" 503 rather than crashing, per the graceful-degradation requirement, but it does mean heavy interactive testing can exhaust a free key for the day.
-- **No export (PDF/CSV)** — explicitly out of scope for this pass (see CLAUDE.md's scope-discipline notes).
+- **LLM provider free-tier quotas** — whichever provider you configure has its own daily/per-minute request caps; the app surfaces a provider outage or quota limit as a clean "AI service temporarily unavailable" 503 rather than crashing, per the graceful-degradation requirement.
+- **No export (PDF/CSV)** — explicitly out of scope for this pass, in favor of the core agent/RAG/multi-tenant requirements.

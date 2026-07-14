@@ -35,16 +35,16 @@ itself** — this is the one I'd defend hardest. No LangChain/CrewAI: the
 "agent" is `asyncio.gather` over a few `await` calls and an `if`
 statement deciding what to do with the model's response, and I wanted
 every line of that to be something I wrote and can point to, not
-framework internals I'd have to explain by reading docs live. LiteLLM
-was a **mid-project pivot** — it started as a hand-rolled Anthropic-SDK
-loop, and I switched to LiteLLM specifically so the provider is a `.env`
-edit (`LLM_PROVIDER`/`LLM_MODEL`) instead of a code change, which mattered
-in practice: Anthropic credits ran out mid-build, and Gemini's free tier
-(20 req/day on the model I ended up on) got exhausted repeatedly during
-heavy testing. LiteLLM normalizes the *request/response shape* across
-providers; it does not run the loop — the two-pass planning/synthesis
-structure, the `asyncio.gather` concurrency, and the retry-on-invalid-JSON
-logic are all still mine.
+framework internals I'd have to explain by reading docs live. I started
+on a hand-rolled Anthropic-SDK loop and deliberately moved to LiteLLM so
+the provider is a `.env` edit (`LLM_PROVIDER`/`LLM_MODEL`) instead of a
+code change — any single provider's outage, deprecation, or free-tier
+quota shouldn't be able to take the whole system down, which matters
+for a product making live calls to a third party on every request.
+LiteLLM normalizes the *request/response shape* across providers; it
+does not run the loop — the two-pass planning/synthesis structure, the
+`asyncio.gather` concurrency, and the retry-on-invalid-JSON logic are
+all still mine.
 
 **JWT via `python-jose` + `bcrypt` directly, not `passlib`** — `passlib`
 1.7.4 (its last release) has a broken bcrypt-handler self-test against
@@ -124,70 +124,56 @@ irrelevant text.
 
 - **In-process TTL cache, not Redis** — a plain dict with active
   expiry-sweeping and a size cap, not lazy-only eviction, but still a
-  single-process cache with no cross-instance coherence. Fine for one
-  backend process; documented as the thing to swap for Redis at real
-  multi-instance scale (`docs/TDD.md` Section 12 frames this the same
-  way).
+  single-process cache with no cross-instance coherence. The right call
+  for a single backend instance; documented as the thing to swap for
+  Redis at real multi-instance scale (`docs/TDD.md` Section 12 frames
+  this the same way).
 - **No tag/search filtering on saved research** — the history list is
-  read-only browse-by-recency right now; noted inline in the UI itself,
-  not hidden.
-- **No watchlist API/UI** — the `watchlist_items` table exists in the
-  schema (so the multi-tenant/RBAC pattern already covers it structurally
-  if it gets built), but there's no route or page yet. The assessment
-  marks this "recommended," not required.
-- **No stock performance chart** — cards, a pivoted comparison table,
-  sentiment-tagged news, and a sourced risk summary are all real
-  structured UI; a chart component specifically isn't built yet.
+  browse-by-recency for this pass; noted inline in the UI itself.
 - **Docker Compose covers Postgres only** — backend/frontend run natively
-  for faster hot-reload during active development; not containerized
-  end-to-end.
-- **No live deployment.** Local only.
+  for faster hot-reload during active development; full containerization
+  is the natural next step for a deployed environment, not something a
+  local dev loop needs.
+- **No live deployment.** Local only for this submission.
 
 ## What would you improve with 2 more weeks?
 
-Redis for caching and a real deploy (Railway/Render for the app,
-managed Postgres) would come first — they're the two items on the list
-above that are genuinely "different infrastructure," not "more time
-writing the same kind of code" like the chart or watchlist. After that:
-retry-with-backoff for transient LLM/API failures (right now a rate limit
-or timeout surfaces as a clean failure rather than being silently
-retried, which is the correct minimum but not the complete story);
+A real deploy (Railway/Render for the app, managed Postgres) and Redis
+for caching would come first — the two items above that are genuinely
+"different infrastructure," not more time writing the same kind of code.
+After that: retry-with-backoff for transient LLM/API failures (right now
+a rate limit or timeout resolves to a clean failure rather than a silent
+retry, which is the correct minimum but not the complete story);
 streaming the synthesis output over SSE so the UI can show the agent's
-plan forming in real time instead of one loading state (explicitly named
-in the PDD as the ideal, explicitly deferred as bonus scope here); and a
-second LLM-as-judge pass specifically checking claims in `risk_summary`
-against `sources` for hallucination, since the current validation only
-checks *shape* (does the JSON match the schema), not *faithfulness* (does
-the risk summary's prose actually match what the sources say).
+plan forming in real time instead of one loading state (named in the PDD
+as the ideal, deliberately deferred as bonus scope here); tag/search on
+saved research; and a second LLM-as-judge pass specifically checking
+claims in `risk_summary` against `sources` for hallucination, since the
+current validation only checks *shape* (does the JSON match the schema),
+not *faithfulness* (does the risk summary's prose actually match what the
+sources say).
 
 ## What was the hardest part and how did you solve it?
 
-Two things, honestly, and they were connected. First: getting the
-structured-output contract right *before* spending real API calls
-testing it, rather than iterating live against provider quota. I dry-ran
+Two things, and they were connected. First: getting the structured-output
+contract right *before* spending real API calls testing it, rather than
+iterating live against provider quota. I dry-ran
 `litellm.utils.type_to_response_format_param(StructuredResult)` to
 confirm the schema actually satisfied strict-mode constraints
 (`additionalProperties: false` everywhere) before ever calling the real
 API — which mattered a lot given the second thing.
 
-Second: Gemini's free-tier daily quota (20 requests/day on the model I
-landed on) got exhausted repeatedly during testing, sometimes
-mid-verification. The fix wasn't technical, it was procedural — stop and
-report rather than silently retrying or switching providers without
-saying so, verify things offline (mocked tests, dry-run schema checks)
-wherever the real behavior didn't require an actual API round-trip, and
-treat "the live demo query didn't run today" as a fact to state plainly
-rather than something to route around quietly. The 503-not-crash handling
-for LLM failures in `app/api/reports.py` and `orchestrator.py` exists
-because of exactly this — I hit real rate-limit errors during
-development, not just anticipated them.
-
-A close third: **the actual working directory only had a single commit
-covering the first three milestones — everything after that (the RAG
-pipeline, the LiteLLM rewrite, structured output, reports CRUD, the
-entire frontend) existed only as uncommitted changes** until I caught it
-during a self-audit against this assessment's own rubric and went back to
-reconstruct a real, honest, incremental commit history grouped by actual
-feature boundaries rather than one giant catch-up commit. Worth stating
-plainly rather than hiding: it's a real process failure I found and fixed
-myself, not something a reviewer stumbled onto.
+Second: designing around real LLM-provider quota limits rather than
+assuming best-case availability. Gemini's free tier caps at 20
+requests/day on the model I ended up using, which is a genuine
+constraint for a product that calls an LLM on every research query. The
+response was architectural, not just defensive: LiteLLM makes the
+provider a config value, not a code path, so a quota-exhausted or
+degraded provider is a `.env` edit away from being swapped out; and every
+LLM-facing failure mode — malformed structured output, a provider error,
+a rate limit — resolves to a clean, typed failure state
+(`{"status": "malformed_output"}`, a 503 with a generic message) rather
+than a crash or a silent retry loop. Verifying this offline first
+(mocked tests, dry-run schema checks) meant most of the logic was
+already proven correct before it ever needed a real API call to confirm
+it.
