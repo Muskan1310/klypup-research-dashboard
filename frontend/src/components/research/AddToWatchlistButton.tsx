@@ -39,7 +39,7 @@ export function AddToWatchlistButton({ ticker }: { ticker: string }) {
       type="button"
       onClick={handleAdd}
       disabled={state === "adding"}
-      className="text-xs font-medium text-indigo-600 hover:text-indigo-500 disabled:opacity-50 dark:text-indigo-400 dark:hover:text-indigo-300"
+      className="text-xs font-medium text-brand-600 hover:text-brand-500 disabled:opacity-50 dark:text-brand-400 dark:hover:text-brand-300"
     >
       {state === "adding" ? "Adding…" : state === "error" ? "Couldn't add — retry" : "+ Watchlist"}
     </button>

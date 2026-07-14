@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
+import { AuthShell } from "@/components/auth/AuthShell";
 import { Button } from "@/components/ui/Button";
 import { ErrorBanner } from "@/components/ui/ErrorBanner";
 import { extractErrorMessage } from "@/lib/api-error";
@@ -66,16 +67,18 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="flex flex-1 items-center justify-center px-4 py-12">
+    <AuthShell>
       <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <h1 className="text-xl font-semibold text-slate-900 dark:text-white">Klypup Research</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Create your account</p>
+        <div className="mb-8">
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-white">Create your account</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Start a new workspace or join one with an invite
+          </p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]"
+          className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm shadow-slate-900/[0.03] dark:border-white/10 dark:bg-white/[0.03]"
         >
           {error && <ErrorBanner message={error} />}
 
@@ -107,7 +110,7 @@ export default function SignupPage() {
               onClick={() => setOrgMode("create")}
               className={`rounded-md px-3 py-1.5 font-medium transition-colors ${
                 orgMode === "create"
-                  ? "bg-white text-slate-900 shadow-sm dark:bg-white/10 dark:text-white"
+                  ? "bg-white text-brand-700 shadow-sm dark:bg-white/10 dark:text-brand-300"
                   : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
               }`}
             >
@@ -118,7 +121,7 @@ export default function SignupPage() {
               onClick={() => setOrgMode("join")}
               className={`rounded-md px-3 py-1.5 font-medium transition-colors ${
                 orgMode === "join"
-                  ? "bg-white text-slate-900 shadow-sm dark:bg-white/10 dark:text-white"
+                  ? "bg-white text-brand-700 shadow-sm dark:bg-white/10 dark:text-brand-300"
                   : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
               }`}
             >
@@ -151,11 +154,11 @@ export default function SignupPage() {
 
         <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+          <Link href="/login" className="font-medium text-brand-600 hover:text-brand-500">
             Sign in
           </Link>
         </p>
       </div>
-    </main>
+    </AuthShell>
   );
 }

@@ -54,14 +54,14 @@ export function LoginForm() {
 
   return (
     <div className="w-full max-w-sm">
-      <div className="mb-8 text-center">
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-white">Klypup Research</h1>
+      <div className="mb-8">
+        <h1 className="text-xl font-semibold text-slate-900 dark:text-white">Welcome back</h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Sign in to your workspace</p>
       </div>
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]"
+        className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm shadow-slate-900/[0.03] dark:border-white/10 dark:bg-white/[0.03]"
       >
         {error && <ErrorBanner message={error} />}
 
@@ -91,7 +91,7 @@ export function LoginForm() {
 
       <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
         Don&apos;t have an account?{" "}
-        <Link href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
+        <Link href="/signup" className="font-medium text-brand-600 hover:text-brand-500">
           Sign up
         </Link>
       </p>

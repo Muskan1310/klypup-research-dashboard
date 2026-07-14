@@ -18,7 +18,7 @@ export function WatchlistStrip({ initialItems }: { initialItems: WatchlistItemRe
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]">
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-900/[0.03] dark:border-white/10 dark:bg-white/[0.03]">
       <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Watchlist</h3>
 
       {items.length === 0 ? (

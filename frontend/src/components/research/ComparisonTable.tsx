@@ -6,7 +6,7 @@ export function ComparisonTable({ rows }: { rows: ComparisonRow[] }) {
   const { tickers, metrics, valueFor } = pivotComparisonTable(rows);
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-white/10">
+    <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm shadow-slate-900/[0.03] dark:border-white/10">
       <table className="w-full min-w-max text-sm">
         <thead>
           <tr className="border-b border-slate-200 bg-slate-50 text-left dark:border-white/10 dark:bg-white/[0.03]">

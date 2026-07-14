@@ -11,12 +11,12 @@ function formatDate(iso: string) {
 
 export function RecentReports({ reports }: { reports: ReportListItem[] }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]">
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-900/[0.03] dark:border-white/10 dark:bg-white/[0.03]">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Recent research</h3>
         <Link
           href="/dashboard/history"
-          className="text-xs text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+          className="text-xs text-brand-600 hover:text-brand-500 dark:text-brand-400"
         >
           View all
         </Link>
@@ -32,7 +32,7 @@ export function RecentReports({ reports }: { reports: ReportListItem[] }) {
             <li key={report.id}>
               <Link
                 href={`/dashboard/history/${report.id}`}
-                className="flex items-center justify-between gap-3 text-xs hover:text-indigo-600 dark:hover:text-indigo-400"
+                className="flex items-center justify-between gap-3 text-xs hover:text-brand-600 dark:hover:text-brand-400"
               >
                 <span className="truncate text-slate-700 dark:text-slate-200">
                   {report.query_text}

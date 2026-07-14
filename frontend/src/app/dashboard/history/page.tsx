@@ -54,7 +54,7 @@ export default async function HistoryPage() {
           </p>
         </div>
       ) : (
-        <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 dark:divide-white/10 dark:border-white/10">
+        <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 shadow-sm shadow-slate-900/[0.03] dark:divide-white/10 dark:border-white/10">
           {reports.map((report) => (
             <li key={report.id}>
               <Link

@@ -1,26 +1,62 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fafafa;
+  --foreground: #17171f;
+  --surface: #ffffff;
+  --border-subtle: #e4e4e9;
+
+  /* Brand: a deep indigo-violet — deliberately not Tailwind's stock
+     `indigo-600` (the single most common "default" primary color in
+     AI-scaffolded UIs). One consistent scale used for every primary
+     action, link, focus ring, and the logo mark. */
+  --brand-50: #f5f2ff;
+  --brand-100: #ece4ff;
+  --brand-200: #d9caff;
+  --brand-300: #bea1ff;
+  --brand-400: #9d6fff;
+  --brand-500: #7c46ff;
+  --brand-600: #6425e8;
+  --brand-700: #511bbd;
+  --brand-800: #431a96;
+  --brand-900: #391c78;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-border-subtle: var(--border-subtle);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0b0b10;
+    --foreground: #ededf2;
+    --surface: #17171f;
+    --border-subtle: #2a2a35;
+
+    --brand-400: #b494ff;
+    --brand-500: #9d6fff;
+    --brand-600: #8354ff;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }

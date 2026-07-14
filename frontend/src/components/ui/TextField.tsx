@@ -14,7 +14,7 @@ export function TextField({
       <input
         id={id}
         name={id}
-        className={`rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline focus:outline-2 focus:outline-offset-1 focus:outline-indigo-500 disabled:bg-slate-100 dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-500 ${className}`}
+        className={`rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition-colors focus:border-brand-500 focus:outline focus:outline-2 focus:outline-offset-1 focus:outline-brand-500 disabled:bg-slate-100 dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-500 ${className}`}
         {...rest}
       />
     </div>

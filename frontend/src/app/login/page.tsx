@@ -1,10 +1,11 @@
 import { Suspense } from "react";
 
+import { AuthShell } from "@/components/auth/AuthShell";
 import { LoginForm } from "@/components/auth/LoginForm";
 
 export default function LoginPage() {
   return (
-    <main className="flex flex-1 items-center justify-center px-4 py-12">
+    <AuthShell>
       {/* useSearchParams (for the post-login "?next=" redirect target)
           requires a Suspense boundary during static prerendering — the
           fallback never actually shows in practice since this page has
@@ -12,6 +13,6 @@ export default function LoginPage() {
       <Suspense fallback={null}>
         <LoginForm />
       </Suspense>
-    </main>
+    </AuthShell>
   );
 }

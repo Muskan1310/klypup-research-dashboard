@@ -12,7 +12,7 @@ export function NewsList({ items }: { items: NewsItem[] }) {
   if (items.length === 0) return null;
 
   return (
-    <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 dark:divide-white/10 dark:border-white/10">
+    <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 shadow-sm shadow-slate-900/[0.03] dark:divide-white/10 dark:border-white/10">
       {items.map((item, i) => (
         <li key={`${item.url}-${i}`} className="flex items-start justify-between gap-3 p-4">
           <div className="min-w-0">
@@ -20,7 +20,7 @@ export function NewsList({ items }: { items: NewsItem[] }) {
               href={item.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm font-medium text-slate-900 hover:text-indigo-600 dark:text-white dark:hover:text-indigo-400"
+              className="text-sm font-medium text-slate-900 hover:text-brand-600 dark:text-white dark:hover:text-brand-400"
             >
               {item.title}
             </a>

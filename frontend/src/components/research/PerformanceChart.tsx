@@ -22,7 +22,7 @@ export function PerformanceChart({ cards }: { cards: CompanyCard[] }) {
   const maxAbs = Math.max(...withChange.map((c) => Math.abs(c.change_percent)), 1);
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]">
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-900/[0.03] dark:border-white/10 dark:bg-white/[0.03]">
       <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
         Today&apos;s performance
       </h3>

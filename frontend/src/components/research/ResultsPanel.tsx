@@ -14,7 +14,16 @@ export type QueryState =
 export function ResultsPanel({ state }: { state: QueryState }) {
   if (state.status === "idle") {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 py-16 text-center dark:border-white/15">
+      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-300 py-16 text-center dark:border-white/15">
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-400/10 dark:text-brand-300">
+          <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
+            <path
+              fillRule="evenodd"
+              d="M9 3.5a5.5 5.5 0 1 0 3.42 9.816l3.132 3.132a.75.75 0 1 0 1.06-1.06l-3.132-3.133A5.5 5.5 0 0 0 9 3.5ZM5 9a4 4 0 1 1 8 0 4 4 0 0 1-8 0Z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </span>
         <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
           No research yet
         </p>
@@ -29,7 +38,7 @@ export function ResultsPanel({ state }: { state: QueryState }) {
   if (state.status === "loading") {
     return (
       <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-slate-200 py-16 text-center dark:border-white/10">
-        <Spinner className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+        <Spinner className="h-6 w-6 text-brand-600 dark:text-brand-400" />
         <p className="text-sm text-slate-500 dark:text-slate-400">
           Running the agent — deciding which tools to call, then fetching stock data, news, and
           filings as needed. This can take several seconds.

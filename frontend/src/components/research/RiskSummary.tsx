@@ -28,7 +28,7 @@ export function RiskSummary({
   if (!summary && sources.length === 0) return null;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]">
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-900/[0.03] dark:border-white/10 dark:bg-white/[0.03]">
       <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Risk summary</h3>
       {summary && (
         <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">

@@ -38,7 +38,7 @@ export function QueryForm({
           onChange={(e) => setQuery(e.target.value)}
           disabled={disabled}
           placeholder="Ask about a company — e.g. “Give me a quick overview of Tesla”"
-          className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline focus:outline-2 focus:outline-offset-1 focus:outline-indigo-500 disabled:bg-slate-100 dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-500"
+          className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm shadow-slate-900/[0.02] placeholder:text-slate-400 transition-colors focus:border-brand-500 focus:outline focus:outline-2 focus:outline-offset-1 focus:outline-brand-500 disabled:bg-slate-100 dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-500"
         />
         <Button type="submit" disabled={disabled || !query.trim()} className="sm:w-32">
           {disabled ? "Running…" : "Research"}
@@ -51,7 +51,7 @@ export function QueryForm({
             type="button"
             disabled={disabled}
             onClick={() => setQuery(example)}
-            className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-500 hover:border-slate-300 hover:text-slate-700 disabled:opacity-50 dark:border-white/10 dark:text-slate-400 dark:hover:border-white/20 dark:hover:text-slate-200"
+            className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-500 transition-colors hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 disabled:opacity-50 dark:border-white/10 dark:text-slate-400 dark:hover:border-brand-400/30 dark:hover:bg-brand-400/10 dark:hover:text-brand-300"
           >
             {example}
           </button>

@@ -49,7 +49,7 @@ export function CompanyCards({ cards }: { cards: CompanyCard[] }) {
       {cards.map((card) => (
         <div
           key={card.ticker}
-          className="rounded-xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]"
+          className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-900/[0.03] dark:border-white/10 dark:bg-white/[0.03]"
         >
           <div className="flex items-baseline justify-between">
             <span className="font-semibold text-slate-900 dark:text-white">{card.ticker}</span>
