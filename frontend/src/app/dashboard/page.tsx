@@ -1,8 +1,9 @@
+import { InviteTeammate } from "@/components/dashboard/InviteTeammate";
 import { RecentReports } from "@/components/dashboard/RecentReports";
 import { WatchlistStrip } from "@/components/dashboard/WatchlistStrip";
 import { ResearchConsole } from "@/components/research/ResearchConsole";
 import { BACKEND_URL } from "@/lib/backend";
-import { getAuthToken } from "@/lib/server-auth";
+import { getAuthToken, getCurrentUser } from "@/lib/server-auth";
 import type { ReportListItem, WatchlistItemResponse } from "@/lib/types";
 
 const RECENT_REPORTS_LIMIT = 3;
@@ -11,9 +12,10 @@ export default async function DashboardPage() {
   const token = await getAuthToken();
   const authHeader = { Authorization: `Bearer ${token}` };
 
-  const [reportsRes, watchlistRes] = await Promise.all([
+  const [reportsRes, watchlistRes, currentUser] = await Promise.all([
     fetch(`${BACKEND_URL}/reports`, { headers: authHeader, cache: "no-store" }),
     fetch(`${BACKEND_URL}/watchlist`, { headers: authHeader, cache: "no-store" }),
+    getCurrentUser(),
   ]);
 
   const recentReports: ReportListItem[] = reportsRes.ok
@@ -31,6 +33,8 @@ export default async function DashboardPage() {
         <RecentReports reports={recentReports} />
         <WatchlistStrip initialItems={watchlistItems} />
       </div>
+
+      {currentUser?.role === "admin" && <InviteTeammate />}
     </div>
   );
 }

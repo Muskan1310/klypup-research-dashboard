@@ -152,3 +152,10 @@ export interface WatchlistItemResponse {
 export interface WatchlistResponse {
   items: WatchlistItemResponse[];
 }
+
+// --- app/schemas/org.py ---
+
+export interface InviteCodeResponse {
+  code: string;
+  expires_at: string;
+}
