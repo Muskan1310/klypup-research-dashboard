@@ -12,7 +12,9 @@ from datetime import timedelta
 from sqlalchemy.orm import Session
 
 from app.core.database import naive_utcnow
+from app.core.tenancy import ScopedSession
 from app.models.invite_code import InviteCode
+from app.models.user import User
 
 INVITE_CODE_EXPIRY = timedelta(days=7)
 """7 days: long enough that an invited analyst who's traveling, or simply
@@ -44,3 +46,12 @@ def create_invite_code(db: Session, org_id: int) -> InviteCode:
     db.commit()
     db.refresh(invite)
     return invite
+
+
+def list_members(db: ScopedSession) -> list[User]:
+    """The concrete "manages workspace" capability (PDD's Admin persona) —
+    distinct from generating an invite code. Takes a ScopedSession, never a
+    raw Session: `users` is tenant-owned data, so this goes through
+    `query_scoped()` the same as every other tenant-owned read in the app.
+    """
+    return db.query_scoped(User).order_by(User.created_at.asc()).all()

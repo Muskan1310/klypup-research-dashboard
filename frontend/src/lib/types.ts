@@ -159,3 +159,14 @@ export interface InviteCodeResponse {
   code: string;
   expires_at: string;
 }
+
+export interface OrgMemberResponse {
+  id: number;
+  email: string;
+  role: UserRole;
+  created_at: string;
+}
+
+export interface OrgMembersResponse {
+  members: OrgMemberResponse[];
+}

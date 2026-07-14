@@ -10,6 +10,8 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from app.models.user import UserRole
+
 
 class OrganizationResponse(BaseModel):
     model_config = {"from_attributes": True}
@@ -28,3 +30,21 @@ class InviteCodeResponse(BaseModel):
 class OrgCreateResponse(BaseModel):
     org: OrganizationResponse
     invite_code: InviteCodeResponse
+
+
+class OrgMemberResponse(BaseModel):
+    """One row in the admin-only team roster (GET /orgs/members) — the
+    concrete "manages workspace" capability, distinct from generating an
+    invite code.
+    """
+
+    model_config = {"from_attributes": True}
+
+    id: int
+    email: str
+    role: UserRole
+    created_at: datetime
+
+
+class OrgMembersResponse(BaseModel):
+    members: list[OrgMemberResponse]

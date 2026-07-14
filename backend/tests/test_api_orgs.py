@@ -41,6 +41,20 @@ def _cleanup(db_session, user_ids: list[int], org_id: int | None) -> None:
     db_session.commit()
 
 
+def _cleanup_multi(db_session, user_ids: list[int], org_ids: list[int]) -> None:
+    if user_ids:
+        db_session.query(User).filter(User.id.in_(user_ids)).delete(synchronize_session=False)
+    for org_id in org_ids:
+        db_session.query(InviteCode).filter(InviteCode.org_id == org_id).delete(
+            synchronize_session=False
+        )
+    if org_ids:
+        db_session.query(Organization).filter(Organization.id.in_(org_ids)).delete(
+            synchronize_session=False
+        )
+    db_session.commit()
+
+
 def test_analyst_forbidden_admin_allowed_to_create_invite_code(client, db_session):
     user_ids: list[int] = []
     org_id = None
@@ -115,3 +129,52 @@ def test_full_invite_flow_join_then_reuse_fails(client, db_session):
         assert third_response.status_code == 400
     finally:
         _cleanup(db_session, user_ids, org_id)
+
+
+def test_list_members_admin_only_and_org_scoped(client, db_session):
+    user_ids: list[int] = []
+    org_ids: list[int] = []
+    try:
+        # Org A: admin + one invited analyst.
+        founder_a = _signup(
+            client, email=_unique_email("a-founder"), password=PASSWORD, org_name=f"Org A {uuid4().hex}"
+        )
+        user_ids.append(founder_a["user"]["id"])
+        org_ids.append(founder_a["user"]["org_id"])
+        admin_a_token = founder_a["access_token"]
+
+        invite_resp = client.post("/orgs/invite-codes", headers=_auth_header(admin_a_token))
+        analyst_a = _signup(
+            client,
+            email=_unique_email("a-analyst"),
+            password=PASSWORD,
+            org_invite_code=invite_resp.json()["code"],
+        )
+        user_ids.append(analyst_a["user"]["id"])
+        analyst_a_token = analyst_a["access_token"]
+
+        # A separate org B — its admin must never see org A's members.
+        founder_b = _signup(
+            client, email=_unique_email("b-founder"), password=PASSWORD, org_name=f"Org B {uuid4().hex}"
+        )
+        user_ids.append(founder_b["user"]["id"])
+        org_ids.append(founder_b["user"]["org_id"])
+        admin_b_token = founder_b["access_token"]
+
+        # Analyst gets 403 — this is "manages workspace," admin-only.
+        analyst_attempt = client.get("/orgs/members", headers=_auth_header(analyst_a_token))
+        assert analyst_attempt.status_code == 403
+
+        # Org A's admin sees exactly its own two members.
+        admin_a_resp = client.get("/orgs/members", headers=_auth_header(admin_a_token))
+        assert admin_a_resp.status_code == 200, admin_a_resp.text
+        emails_a = {m["email"] for m in admin_a_resp.json()["members"]}
+        assert emails_a == {founder_a["user"]["email"], analyst_a["user"]["email"]}
+
+        # Org B's admin sees only itself — org A's roster never leaks across.
+        admin_b_resp = client.get("/orgs/members", headers=_auth_header(admin_b_token))
+        assert admin_b_resp.status_code == 200, admin_b_resp.text
+        emails_b = {m["email"] for m in admin_b_resp.json()["members"]}
+        assert emails_b == {founder_b["user"]["email"]}
+    finally:
+        _cleanup_multi(db_session, user_ids, org_ids)

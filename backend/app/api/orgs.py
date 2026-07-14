@@ -6,9 +6,9 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.tenancy import CurrentUser, require_role
+from app.core.tenancy import CurrentUser, ScopedSession, get_scoped_db, require_role
 from app.models.user import UserRole
-from app.schemas.org import InviteCodeResponse
+from app.schemas.org import InviteCodeResponse, OrgMemberResponse, OrgMembersResponse
 from app.services import org_service
 
 router = APIRouter(tags=["orgs"])
@@ -31,3 +31,19 @@ def create_invite_code(
     """
     invite = org_service.create_invite_code(db, current_user.org_id)
     return InviteCodeResponse.model_validate(invite)
+
+
+@router.get("/members", response_model=OrgMembersResponse)
+def list_members(
+    current_user: CurrentUser = Depends(require_role(UserRole.ADMIN)),
+    db: ScopedSession = Depends(get_scoped_db),
+) -> OrgMembersResponse:
+    """List everyone in the current admin's org — the "manages workspace"
+    capability, kept distinct from `POST /invite-codes` ("invites users").
+    `require_role(UserRole.ADMIN)` rejects non-admins with 403 before this
+    body runs; `get_scoped_db` means the query itself is structurally
+    incapable of returning another org's users even if that check were
+    ever removed.
+    """
+    members = org_service.list_members(db)
+    return OrgMembersResponse(members=[OrgMemberResponse.model_validate(m) for m in members])
