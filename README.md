@@ -49,7 +49,10 @@ original working design docs this was built from.
 ## Prerequisites
 
 - Python 3.11–3.13 (LiteLLM currently caps at `<3.14`)
-- [Poetry](https://python-poetry.org/docs/#installation)
+- [Poetry](https://python-poetry.org/docs/#installation) — if `poetry` isn't
+  found after installing, its install location isn't on your shell's
+  `PATH` yet; the installer prints the exact line to add, or see
+  [Poetry's PATH troubleshooting](https://python-poetry.org/docs/#installing-with-the-official-installer)
 - Node.js 22.13+ (pnpm 11.x's minimum supported version) and [pnpm](https://pnpm.io/installation) (`corepack enable` if you don't have pnpm yet)
 - Docker (for Postgres)
 - API keys, all free-tier:
