@@ -69,24 +69,33 @@ docker compose up -d
 
 ```bash
 cd backend
-cp .env.example .env        # fill in your real keys + a random JWT_SECRET_KEY
+cp .env.example .env
 poetry install
-poetry run alembic upgrade head    # creates the schema — required before first run
+poetry run alembic upgrade head
 poetry run uvicorn app.main:app --reload --port 8000
 ```
+
+Before the last command works, open `backend/.env` and fill in your real
+keys plus a random `JWT_SECRET_KEY` (generate one with
+`python3 -c "import secrets; print(secrets.token_hex(32))"`).
+`alembic upgrade head` creates the schema — required before first run, or
+the very first signup will fail.
 
 Verify: `curl http://localhost:8000/health` → `{"status": "ok", ...}`
 
 ### 3. Seed data (so there's something to see immediately)
 
+Still in `backend/`, same terminal or a new one with the venv active:
+
 ```bash
-# still in backend/, same terminal or a new one with the venv active
-poetry run python scripts/run_ingestion.py    # chunks + embeds the sample filings into Chroma
-poetry run python scripts/seed_demo_data.py   # creates 2 demo orgs, users, and 2 saved reports
+poetry run python scripts/run_ingestion.py
+poetry run python scripts/seed_demo_data.py
 ```
 
-The seed script prints exactly what it created. It's idempotent — safe to
-re-run. Demo logins (all use password `demo-password-123`):
+The first command chunks and embeds the sample filings into Chroma; the
+second creates 2 demo orgs, users, and 2 saved reports. The seed script
+prints exactly what it created, and it's idempotent — safe to re-run.
+Demo logins (all use password `demo-password-123`):
 
 | Email | Org | Role |
 |---|---|---|
@@ -111,9 +120,12 @@ Visit `http://localhost:3000` → log in with a demo account above.
 
 ```bash
 cd backend
-poetry run pytest        # 57 tests: services, tenancy/cross-org isolation, orchestrator, RAG, API routes
+poetry run pytest
 poetry run ruff check .
 ```
+
+`pytest` runs 57 tests: services, tenancy/cross-org isolation, orchestrator,
+RAG, API routes.
 
 ```bash
 cd frontend
