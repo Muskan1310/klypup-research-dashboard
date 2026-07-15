@@ -35,9 +35,8 @@ itself** — this is the one I'd defend hardest. No LangChain/CrewAI: the
 "agent" is `asyncio.gather` over a few `await` calls and an `if`
 statement deciding what to do with the model's response, and I wanted
 every line of that to be something I wrote and can point to, not
-framework internals I'd have to explain by reading docs live. I started
-on a hand-rolled Anthropic-SDK loop and deliberately moved to LiteLLM so
-the provider is a `.env` edit (`LLM_PROVIDER`/`LLM_MODEL`) instead of a
+framework internals I'd have to explain by reading docs live. LiteLLM
+makes the provider a `.env` edit (`LLM_PROVIDER`/`LLM_MODEL`) instead of a
 code change — any single provider's outage, deprecation, or free-tier
 quota shouldn't be able to take the whole system down, which matters
 for a product making live calls to a third party on every request.
@@ -165,17 +164,17 @@ confirm the schema actually satisfied strict-mode constraints
 (`additionalProperties: false` everywhere) before ever calling the real
 API — which mattered a lot given the second thing.
 
-Second: designing around real LLM-provider quota limits rather than
-assuming best-case availability. Gemini's free tier caps at 20
-requests/day on the model I ended up using, which is a genuine
-constraint for a product that calls an LLM on every research query. The
-response was architectural, not just defensive: LiteLLM makes the
-provider a config value, not a code path, so a quota-exhausted or
-degraded provider is a `.env` edit away from being swapped out; and every
-LLM-facing failure mode — malformed structured output, a provider error,
-a rate limit — resolves to a clean, typed failure state
-(`{"status": "malformed_output"}`, a 503 with a generic message) rather
-than a crash or a silent retry loop. Verifying this offline first
-(mocked tests, dry-run schema checks) meant most of the logic was
+Second: designing around real third-party constraints rather than
+assuming best-case availability — any LLM provider imposes some rate or
+quota limit, and a product calling one on every request has to survive
+that gracefully, not just in the demo, but in real usage. The response
+was architectural, not just defensive: LiteLLM makes the provider a
+config value, not a code path, so a degraded or quota-limited provider is
+a config edit away from being swapped; and every LLM-facing failure mode
+— malformed structured output, a provider error, a rate limit — resolves
+to a clean, typed failure state (`{"status": "malformed_output"}`, a 503
+with a generic message) rather than a crash or a silent retry loop.
+Verifying this offline first (mocked tests, dry-run schema checks) meant
+most of the logic was
 already proven correct before it ever needed a real API call to confirm
 it.
